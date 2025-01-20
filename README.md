@@ -23,4 +23,4 @@ yarn install
 yarn start:dev
 ```
 
-Por padrão, a API estará disponível em: http://localhost:3000.
+Por padrão, a API estará disponível em: http://localhost:3001.
