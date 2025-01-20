@@ -17,21 +17,20 @@ export class WeatherController {
   ) {}
 
   @Get('/city')
-  @HttpCode(201)
-  async createAccessToken(@Body() city: string): Promise<any> {
-    return await this.service.getCity(city);
+  @HttpCode(200)
+  async getCity(@Body() data: any): Promise<any> {
+    return await this.service.getCity(data.city);
   }
 
   @Get('/cities')
-  @HttpCode(201)
-  async getCities(@Body() city: string): Promise<any> {
-    return await this.service.getCities(city);
+  @HttpCode(200)
+  async getCities(@Body() data: any): Promise<any> {
+    return await this.service.getCities(data.cities);
   }
 
   @Get('/average')
-  @HttpCode(201)
-  async getAverage(@Body() city: string): Promise<any> {
-    const response = await this.service.getCity(city);
-    return `${(response.max_temp + response.min_temp) / 2}`;
+  @HttpCode(200)
+  async getAverage(@Body() data: any): Promise<any> {
+    return await this.service.getAverage(data.city);
   }
 }

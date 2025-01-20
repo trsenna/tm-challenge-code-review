@@ -1,77 +1,58 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { WeatherResponseData } from './weather.response.data';
-import { catchError, firstValueFrom } from 'rxjs';
-import { AxiosError } from 'axios';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class WeatherService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {}
 
-  async getCity(city: any): Promise<WeatherResponseData> {
+  async getCity(city: string): Promise<WeatherResponseData> {
+    return await this.callOneByCity(city);
+  }
+
+  async getCities(cities: string[]): Promise<Array<WeatherResponseData>> {
+    return await Promise.all(
+      cities.map(async (city: string) => this.callOneByCity(city)),
+    );
+  }
+
+  async getAverage(city: any): Promise<string> {
+    const weatherResponse = await this.callOneByCity(city);
+    return `${(weatherResponse.max_temp + weatherResponse.min_temp) / 2}`;
+  }
+
+  async callOneByCity(city: string): Promise<WeatherResponseData> {
+    const weatherApiKey = this.configService.get<string>('WEATHER_API_KEY');
+    const weatherApiUrl = this.configService.get<string>('WEATHER_API_URL');
+
+    const headers = {
+      'X-Api-Key': weatherApiKey,
+      'Content-Type': 'application/json',
+    };
+
     try {
-      const rc = {
-        headers: {
-          'X-Api-Key': 'x7x1/ROfdQInbFu1j60j7g==qDJQLrZgbMHe5Azr',
-          'Content-Type': 'application/json',
-        },
-      };
-      const { data } = await firstValueFrom(
-        this.httpService
-          .get<WeatherResponseData>(
-            `https://api.api-ninjas.com/v1/weather?city=${city.city}`,
-            rc,
-          )
-          .pipe(
-            catchError((error: AxiosError) => {
-              console.log(error.response.data);
-              throw error.response.data;
-            }),
-          ),
+      const response = await firstValueFrom(
+        this.httpService.get<WeatherResponseData>(
+          `${weatherApiUrl}?city=${city}`,
+          { headers },
+        ),
       );
-      return data;
-    } catch (err) {
-      throw new InternalServerErrorException({
-        descriptionOrOptions: err,
-      });
+
+      return response.data ? response.data[0] || null : null;
+    } catch (error) {
+      console.error(
+        `Error fetching data for city: ${city}`,
+        error.response?.data || error,
+      );
+
+      throw new InternalServerErrorException(
+        `Failed to fetch data for city: ${city}`,
+      );
     }
-  }
-
-  async getCities(cities: any): Promise<Array<WeatherResponseData>> {
-    let x: Array<WeatherResponseData>;
-    cities.array.forEach(async (element: any) => {
-      try {
-        const rc = {
-          headers: {
-            'X-Api-Key': 'x7x1/ROfdQInbFu1j60j7g==qDJQLrZgbMHe5Azr',
-            'Content-Type': 'application/json',
-          },
-        };
-        const { data } = await firstValueFrom(
-          this.httpService
-            .get<WeatherResponseData>(
-              `https://api.api-ninjas.com/v1/weather?city=${element.city}`,
-              rc,
-            )
-            .pipe(
-              catchError((error: AxiosError) => {
-                console.log(error.response.data);
-                throw error.response.data;
-              }),
-            ),
-        );
-        x.push(data);
-      } catch (err) {
-        throw new InternalServerErrorException({
-          descriptionOrOptions: err,
-        });
-      }
-    });
-    return x;
-  }
-
-  async getMedia(city: any): Promise<string> {
-    const response = await this.getCity(city);
-    return `${(response.max_temp + response.min_temp) / 2}`;
   }
 }
