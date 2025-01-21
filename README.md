@@ -24,3 +24,13 @@ yarn start:dev
 ```
 
 Por padrão, a API estará disponível em: http://localhost:3001.
+
+### Mock API com JSON Server
+
+Este projeto inclui um mock de API configurado com o JSON Server para simular respostas de endpoints durante o desenvolvimento. Para iniciá-lo execute o seguinte comando:
+
+```bash
+yarn local:api
+```
+
+Isso irá inicializar o JSON Server no endereço http://localhost:3002.
