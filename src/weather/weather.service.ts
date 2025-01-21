@@ -3,16 +3,19 @@ import { WeatherResponseData } from './weather.response.data';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { QueryBus } from '@nestjs/cqrs';
+import { GetCityQuery } from './queries/get-city.query';
 
 @Injectable()
 export class WeatherService {
   constructor(
+    private queryBus: QueryBus,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
 
-  async getCity(city: string): Promise<WeatherResponseData> {
-    return await this.callOneByCity(city);
+  async getCity(cityName: string): Promise<WeatherResponseData> {
+    return this.queryBus.execute(new GetCityQuery(cityName));
   }
 
   async getCities(cities: string[]): Promise<Array<WeatherResponseData>> {
