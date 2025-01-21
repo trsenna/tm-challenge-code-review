@@ -1,4 +1,4 @@
-export class WeatherResponseData {
+export class WeatherDto {
   cloud_pct: number;
   temp: number;
   feels_like: number;
