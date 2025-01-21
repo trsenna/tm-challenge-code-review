@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpCode, Injectable } from '@nestjs/common';
-import { WeatherDto } from './dtos/weather.dto';
+import { WeatherDto } from '../dtos/weather.dto';
 import { QueryBus } from '@nestjs/cqrs';
-import { GetCityQuery } from './queries/get-city.query';
-import { GetCitiesQuery } from './queries/get-cities.query';
-import { AverageQuery } from './queries/average.query';
+import { GetCityQuery } from '../queries/get-city.query';
+import { GetCitiesQuery } from '../queries/get-cities.query';
+import { AverageQuery } from '../queries/average.query';
 
 @Injectable()
 @Controller('weather')
