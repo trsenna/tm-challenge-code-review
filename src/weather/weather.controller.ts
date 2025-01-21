@@ -7,6 +7,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { WeatherService } from './weather.service';
+import { WeatherDto } from './dtos/weather.dto';
 
 @Injectable()
 @Controller('weather')
@@ -18,19 +19,19 @@ export class WeatherController {
 
   @Get('/city')
   @HttpCode(200)
-  async getCity(@Body() data: any): Promise<any> {
+  async getCity(@Body() data: any): Promise<WeatherDto> {
     return await this.service.getCity(data.city);
   }
 
   @Get('/cities')
   @HttpCode(200)
-  async getCities(@Body() data: any): Promise<any> {
+  async getCities(@Body() data: any): Promise<Array<WeatherDto>> {
     return await this.service.getCities(data.cities);
   }
 
   @Get('/average')
   @HttpCode(200)
-  async getAverage(@Body() data: any): Promise<any> {
-    return await this.service.getAverage(data.city);
+  async average(@Body() data: any): Promise<number> {
+    return await this.service.average(data.city);
   }
 }

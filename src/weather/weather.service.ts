@@ -1,61 +1,23 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { WeatherResponseData } from './weather.response.data';
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
+import { Injectable } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { GetCityQuery } from './queries/get-city.query';
+import { GetCitiesQuery } from './queries/get-cities.query';
+import { AverageQuery } from './queries/average.query';
+import { WeatherDto } from './dtos/weather.dto';
 
 @Injectable()
 export class WeatherService {
-  constructor(
-    private queryBus: QueryBus,
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
-  ) {}
+  constructor(private queryBus: QueryBus) {}
 
-  async getCity(cityName: string): Promise<WeatherResponseData> {
+  async getCity(cityName: string): Promise<WeatherDto> {
     return this.queryBus.execute(new GetCityQuery(cityName));
   }
 
-  async getCities(cities: string[]): Promise<Array<WeatherResponseData>> {
-    return await Promise.all(
-      cities.map(async (city: string) => this.callOneByCity(city)),
-    );
+  async getCities(cityNames: string[]): Promise<Array<WeatherDto>> {
+    return this.queryBus.execute(new GetCitiesQuery(cityNames));
   }
 
-  async getAverage(city: any): Promise<string> {
-    const weatherResponse = await this.callOneByCity(city);
-    return `${(weatherResponse.max_temp + weatherResponse.min_temp) / 2}`;
-  }
-
-  async callOneByCity(city: string): Promise<WeatherResponseData> {
-    const weatherApiKey = this.configService.get<string>('WEATHER_API_KEY');
-    const weatherApiUrl = this.configService.get<string>('WEATHER_API_URL');
-
-    const headers = {
-      'X-Api-Key': weatherApiKey,
-      'Content-Type': 'application/json',
-    };
-
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<WeatherResponseData>(
-          `${weatherApiUrl}?city=${city}`,
-          { headers },
-        ),
-      );
-
-      return response.data ? response.data[0] || null : null;
-    } catch (error) {
-      console.error(
-        `Error fetching data for city: ${city}`,
-        error.response?.data || error,
-      );
-
-      throw new InternalServerErrorException(
-        `Failed to fetch data for city: ${city}`,
-      );
-    }
+  async average(cityName: string): Promise<number> {
+    return this.queryBus.execute(new AverageQuery(cityName));
   }
 }
