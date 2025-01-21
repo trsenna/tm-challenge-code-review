@@ -1,12 +1,12 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetCityQuery } from '../get-city.query';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { WeatherDto } from 'src/weather/dtos/weather.dto';
 import { firstValueFrom } from 'rxjs';
+import { GetCitiesQuery } from '../get-cities.query';
 
-@QueryHandler(GetCityQuery)
-export class GetCityHandler implements IQueryHandler<GetCityQuery> {
+@QueryHandler(GetCitiesQuery)
+export class GetCityHandler implements IQueryHandler<GetCitiesQuery> {
   private readonly weatherApiKey: string;
   private readonly weatherApiUrl: string;
   private readonly headers: Record<string, string>;
@@ -23,16 +23,20 @@ export class GetCityHandler implements IQueryHandler<GetCityQuery> {
     };
   }
 
-  async execute(query: GetCityQuery) {
-    const response = await firstValueFrom(
-      this.httpService.get<WeatherDto>(
-        `${this.weatherApiUrl}?city=${query.cityName}`,
-        {
-          headers: this.headers,
-        },
-      ),
-    );
+  async execute(query: GetCitiesQuery) {
+    return await Promise.all(
+      query.cityNames.map(async (cityName: string) => {
+        const response = await firstValueFrom(
+          this.httpService.get<WeatherDto>(
+            `${this.weatherApiUrl}?city=${cityName}`,
+            {
+              headers: this.headers,
+            },
+          ),
+        );
 
-    return response.data ? response.data[0] || null : null;
+        return response.data ? response.data[0] || null : null;
+      }),
+    );
   }
 }
