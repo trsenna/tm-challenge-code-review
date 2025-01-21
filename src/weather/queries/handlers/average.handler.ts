@@ -4,6 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { WeatherDto } from 'src/weather/dtos/weather.dto';
 import { firstValueFrom } from 'rxjs';
 import { AverageQuery } from '../average.query';
+import { WeatherService } from 'src/weather/services/weather.service';
 
 @QueryHandler(AverageQuery)
 export class AverageHandler implements IQueryHandler<AverageQuery> {
@@ -12,6 +13,7 @@ export class AverageHandler implements IQueryHandler<AverageQuery> {
   private readonly headers: Record<string, string>;
 
   constructor(
+    private readonly weatherService: WeatherService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
@@ -33,8 +35,8 @@ export class AverageHandler implements IQueryHandler<AverageQuery> {
       ),
     );
 
-    const weather = response.data ? response.data[0] || null : null;
-
-    return (weather?.max_temp + weather?.min_temp) / 2;
+    return this.weatherService.calculateAverage(
+      response.data ? response.data[0] || null : null,
+    );
   }
 }

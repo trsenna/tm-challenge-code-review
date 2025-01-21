@@ -4,10 +4,11 @@ import { WeatherController } from './controllers/weather.controller';
 import { GetCityHandler } from './queries/handlers/get-city.handler';
 import { AverageHandler } from './queries/handlers/average.handler';
 import { GetCitiesHandler } from './queries/handlers/get-cities.handler';
+import { WeatherService } from './services/weather.service';
 
 @Module({
   imports: [HttpModule],
   controllers: [WeatherController],
-  providers: [AverageHandler, GetCitiesHandler, GetCityHandler],
+  providers: [AverageHandler, GetCitiesHandler, GetCityHandler, WeatherService],
 })
 export class WeatherModule {}
